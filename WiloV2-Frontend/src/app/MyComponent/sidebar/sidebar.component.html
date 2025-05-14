@@ -1,0 +1,7 @@
+<div class="sidebar" *ngIf="isAuthenticated()">
+    <div class="tabs"><a [routerLink]="['/dashboard']" routerLinkActive="active">Material-Table</a></div>
+    <!-- <div class="tabs"><a [routerLink]="['/master']" routerLinkActive="active">Master</a></div> -->
+    <div class="tabs"><a [routerLink]="['/consume']" routerLinkActive="active">Consume</a></div>
+    <div class="tabs"><a [routerLink]="['/printbarcode']" routerLinkActive="active">PrintBarcode</a></div>
+    <div class="tabs"><a [routerLink]="['/reports']" routerLinkActive="active">Reports</a></div>
+</div>

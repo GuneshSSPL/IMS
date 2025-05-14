@@ -1,0 +1,29 @@
+<div class="login-container">
+  <app-auth-sidebar></app-auth-sidebar>
+  <mat-card class="form-container">
+    <mat-card-title>Login</mat-card-title>
+    <form (ngSubmit)="login()" #loginForm="ngForm">
+      <mat-form-field appearance="fill">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" [(ngModel)]="credentials.email" name="email" required>
+      </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Password</mat-label>
+        <input matInput type="password" [(ngModel)]="credentials.password" name="password" required minlength="6">
+      </mat-form-field>
+      <div class="button-container">
+        <button mat-raised-button color="primary" type="submit" [disabled]="!loginForm.form.valid">Sign In</button>
+        <button mat-button routerLink="/signup">Sign Up</button>
+      </div>
+    </form>
+    <div class="oauth-container">
+      <!-- <<p class="oauth-divider">Or sign in with</p> -->
+       <div class="oauth-buttons">
+        <button mat-button (click)="loginWithAuth0()" class="btn-auth0">
+          <!-- <img src="assets/images/pagani-logo-png_seeklogo-438353.png" alt="Auth0 Logo" /> -->
+          Auth0
+        </button>
+      </div>
+    </div>
+  </mat-card>
+</div>

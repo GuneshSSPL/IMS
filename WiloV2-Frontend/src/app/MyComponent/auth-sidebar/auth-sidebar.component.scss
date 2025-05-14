@@ -1,0 +1,55 @@
+.auth-sidebar {
+  width: 280px;
+  height: 100vh;
+  background: linear-gradient(145deg, #000000 0%, #1a1a1a 100%);
+  position: fixed;
+  left: 0;
+  top: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.logo-container {
+  text-align: center;
+  padding: 20px;
+  width: 80%;
+  animation: fadeIn 1s ease-in-out;
+}
+
+.company-logo {
+  width: 100%;
+  height: auto;
+  max-width: 200px;
+  filter: brightness(1.1);
+  transition: transform 0.3s ease, filter 0.3s ease;
+
+  &:hover {
+    transform: scale(1.05);
+    filter: brightness(1.2);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .auth-sidebar {
+    width: 100%;
+    height: 120px;
+    position: relative;
+  }
+
+  .company-logo {
+    max-width: 160px;
+  }
+}

@@ -1,0 +1,59 @@
+<div class="form-container">
+  <form #materialForm="ngForm" (ngSubmit)="generateBarcode()">
+    <div class="form-group">
+      <label>Material Code*</label>
+      <input type="text" [(ngModel)]="MaterialCode" name="MaterialCode" required>
+      <small *ngIf="!MaterialCode && materialForm.submitted">Required</small>
+    </div>
+
+    <div class="form-group">
+      <label>Description*</label>
+      <input type="text" [(ngModel)]="Description" name="Description" required>
+      <small *ngIf="!Description && materialForm.submitted">Required</small>
+    </div>
+
+    <div class="form-group">
+      <label>Category ID*</label>
+      <input type="number" [(ngModel)]="CategoryID" name="CategoryID" required>
+      <small *ngIf="!CategoryID && materialForm.submitted">Required</small>
+    </div>
+
+    <div class="form-group">
+      <label>Current Quantity*</label>
+      <input type="number" [(ngModel)]="CurrentQuantity" name="CurrentQuantity" required>
+      <small *ngIf="!CurrentQuantity && materialForm.submitted">Required</small>
+    </div>
+
+    <div class="form-group">
+      <label>Unit of Measure</label>
+      <input type="text" [(ngModel)]="UOM" name="UOM">
+    </div>
+
+    <div class="form-group">
+      <label>Unit Price</label>
+      <input type="number" [(ngModel)]="UnitPrice" name="UnitPrice" step="0.01">
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" [disabled]="isLoading">
+        {{ isLoading ? 'Processing...' : 'Create Material' }}
+      </button>
+      <button type="button" (click)="printBarcode()" [disabled]="!generatedBarcode">
+        Print Barcode
+      </button>
+    </div>
+
+    <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
+
+    <div *ngIf="successMessage" class="success-message">
+      {{ successMessage }}
+    </div>
+  </form>
+
+  <div *ngIf="generatedBarcode" class="barcode-preview">
+    <h3>Generated Barcode:</h3>
+    <img [src]="generatedBarcode" alt="Material Barcode">
+  </div>
+</div>

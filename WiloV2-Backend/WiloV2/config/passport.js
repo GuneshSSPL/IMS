@@ -1,10 +1,11 @@
 import express from 'express'; // Keep if express.Router() was used, but it will be removed.
 import passport from 'passport';
 import { Strategy as Auth0Strategy } from 'passport-auth0';
+import { Strategy as LinkedInStrategy } from 'passport-linkedin-oauth2'; // Import LinkedInStrategy
 import { findOrCreateUser, findUserById } from '../services/userService.js';
-// import dotenv from 'dotenv'; // Remove this line
+// import dotenv from 'dotenv'; // This should be removed, app.js handles it
 
-// dotenv.config({ path: process.cwd() + '/WiloV2/.env' }); // Remove this line
+// dotenv.config({ path: process.cwd() + '/WiloV2/.env' }); // This should be removed
 
 const configurePassport = () => {
   // passport.serializeUser and deserializeUser are more for session-based auth.
@@ -24,18 +25,18 @@ const configurePassport = () => {
   });
 
   passport.use(new Auth0Strategy({
-    domain: process.env.AUTH0_DOMAIN, // This should now be populated
-    clientID: process.env.AUTH0_CLIENT_ID, // This should now be populated
-    clientSecret: process.env.AUTH0_SECRET, // This should now be populated
+    domain: process.env.AUTH0_DOMAIN,
+    clientID: process.env.AUTH0_CLIENT_ID,
+    clientSecret: process.env.AUTH0_SECRET,
     callbackURL: process.env.AUTH0_CALLBACK_URL || 'http://localhost:5000/auth/auth0/callback',
     state: true
   }, async (accessToken, refreshToken, extraParams, profile, done) => {
     try {
-      const userProfileData = { // Map Auth0 profile to your expected structure for findOrCreateUser
+      const userProfileData = {
         provider: 'auth0',
-        providerId: profile.id, // or profile.user_id
+        providerId: profile.sub || profile.user_id || profile.id, // Use profile.sub or profile.user_id as primary
         email: profile.emails && profile.emails[0] && profile.emails[0].value,
-        name: profile.displayName || (profile.name ? `${profile.name.givenName} ${profile.name.familyName}` : null),
+        name: profile.displayName || profile.nickname || (profile.name ? `${profile.name.givenName} ${profile.name.familyName}` : null),
         picture: profile.picture || (profile.photos && profile.photos[0] && profile.photos[0].value)
       };
 
@@ -44,13 +45,44 @@ const configurePassport = () => {
         return done(new Error("Email not provided by Auth0 profile."), null);
       }
       
-      // findOrCreateUser should return your application's user object,
-      // including id, email, and RoleName or roleId.
       const appUser = await findOrCreateUser(userProfileData);
-      return done(null, appUser); // Pass your application's user object to the callback route
+      return done(null, appUser);
     } catch (err) {
       console.error("Error in Auth0 strategy processing:", err);
       return done(err, null);
+    }
+  }));
+
+  // Add LinkedIn Strategy Configuration here
+  passport.use(new LinkedInStrategy({
+    clientID: process.env.LINKEDIN_CLIENT_ID,
+    clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
+    callbackURL: process.env.LINKEDIN_CALLBACK_URL || 'http://localhost:5000/auth/linkedin/callback',
+    scope: ['openid', 'profile', 'email'], // <-- UPDATE THIS LINE
+    state: true
+  }, async (accessToken, refreshToken, profile, done) => {
+    try {
+      console.log('LinkedIn OIDC Profile:', JSON.stringify(profile, null, 2)); // Add this line to inspect
+
+      const userProfile = {
+        provider: 'linkedin',
+        providerId: profile.sub || profile.id, // OIDC often uses 'sub' for subject identifier
+        // Adjust these based on the actual profile structure logged above:
+        email: profile.email || (profile.emails && profile.emails[0] ? profile.emails[0].value : null),
+        name: profile.name || profile.displayName || `${profile.given_name} ${profile.family_name}`,
+        picture: profile.picture || (profile.photos && profile.photos[0] ? profile.photos[0].value : null),
+      };
+
+      if (!userProfile.email) {
+        console.error('Email not found in LinkedIn OIDC profile:', profile);
+        return done(new Error('Email not provided by LinkedIn.'), null);
+      }
+
+      const user = await findOrCreateUser(userProfile);
+      return done(null, user);
+    } catch (error) {
+      console.error("Error in LinkedIn strategy processing:", error);
+      return done(error, null);
     }
   }));
 };

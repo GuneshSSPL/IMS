@@ -1,20 +1,25 @@
 import dotenv from 'dotenv';
 import path from 'path';
+import { fileURLToPath } from 'url'; 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// Configure dotenv to use the .env file from the WiloV2 directory
-// Ensure this is at the very top, before other imports
-const envPath = path.join(process.cwd(), 'WiloV2', '.env');
-dotenv.config({ path: envPath }); // This line loads the .env file
+const envPath = path.resolve(__dirname, '.env'); 
+dotenv.config({ path: envPath }); 
 
 import express from 'express';
 import cors from 'cors';
 import session from 'express-session';
 import passport from 'passport';
-import { fileURLToPath } from 'url';
 import configurePassport from './config/passport.js';
 import { poolConnect } from './config/db.js';
+
+// Import your chosen authentication middleware
+import { authenticate } from './middleware/auth.js'; // Using authenticate from auth.js
+
+// Route imports
 import materialRoutes from './routes/materialRoutes.js';
-import authRoutes from './routes/authRoutes.js';
+import authRoutes from './routes/authRoutes.js'; // Public routes
 import transactionRoutes from './routes/transactionRoutes.js';
 import supplierRoutes from './routes/supplierRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
@@ -26,17 +31,13 @@ import reportRoutes from './routes/reportRoutes.js';
 import userManagementRoutes from './routes/userManagementRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import consumeRoutes from './routes/consumeRoutes.js';
-import errorHandler from './middleware/errorHandler.js';
 
-// Resolve file paths for ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import errorHandler from './middleware/errorHandler.js';
 
 const app = express();
 
-// Configure CORS first - ONLY ONE IS NEEDED
 app.use(cors({
-  origin: 'http://localhost:4200', // Ensure this matches your frontend URL
+  origin: 'http://localhost:4200',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
@@ -44,7 +45,6 @@ app.use(cors({
 
 app.use(express.json());
 
-// Configure session middleware
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-session-secret',
   resave: false,
@@ -52,16 +52,15 @@ app.use(session({
   cookie: { 
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    maxAge: 24 * 60 * 60 * 1000
   }
 }));
 
-// Initialize passport
 app.use(passport.initialize());
 app.use(passport.session());
-configurePassport(); // This should now find the env variables
+configurePassport();
 
-// Update root route
+// Root route (public)
 app.get('/', (req, res) => {
   if (req.isAuthenticated()) {
     res.redirect('http://localhost:4200/dashboard');
@@ -70,30 +69,23 @@ app.get('/', (req, res) => {
   }
 });
 
-app.use('/barcodes', express.static(path.join(__dirname, 'barcodes')));
+// Public routes (authentication, registration, OAuth callbacks)
+app.use('/auth', authRoutes); 
 
-// REMOVE THIS DUPLICATE CORS CONFIGURATION
-// app.use(cors({
-//   origin: 'http://localhost:4200', // Ensure this matches your frontend URL
-//   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-//   allowedHeaders: ['Content-Type', 'Authorization'],
-//   credentials: true
-// }));
+// Static assets (public)
+app.use('/barcodes', express.static(path.join(__dirname, 'public', 'barcodes')));
 
-poolConnect
-  .then(() => console.log('Connected to SQL Server'))
-  .catch(err => console.error('Database connection failed:', err));
+// Apply authentication middleware to all /api routes
+app.use('/api', authenticate); // <<< ALL ROUTES STARTING WITH /api WILL NOW REQUIRE AUTHENTICATION
 
-// Register routes
+// Register API routes (they will inherit the /api prefix and the authenticate middleware)
 app.use('/api/materials', materialRoutes);
-// Register routes
-app.use('/auth', authRoutes);  // Ensure this matches the path used in your frontend
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/suppliers', supplierRoutes);
 app.use('/api/categories', categoryRoutes);
-app.use('/api/roleRoutes', roleRoutes);
+app.use('/api/roleRoutes', roleRoutes); // Consider renaming to /api/roles
 app.use('/api/departments', departmentRoutes);
-app.use('/api/print-barcode', barcodeRoutes);
+app.use('/api/print-barcode', barcodeRoutes); // Consider renaming to /api/barcodes
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/user-management', userManagementRoutes);
@@ -103,7 +95,9 @@ app.use('/api/consume', consumeRoutes);
 // Error handler should be last
 app.use(errorHandler);
 
-app.use('/barcodes', express.static(path.join(__dirname, 'public', 'barcodes')));
+poolConnect
+  .then(() => console.log('Connected to SQL Server'))
+  .catch(err => console.error('Database connection failed:', err));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

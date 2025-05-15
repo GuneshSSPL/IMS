@@ -1,21 +1,40 @@
 // ./config/sequelize.js
 import { Sequelize } from 'sequelize';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-dotenv.config();
+// For ES modules, __dirname is not available directly, so we derive it
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load .env file from the parent directory (WiloV2) relative to this config file
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
+// --- BEGIN DEBUG LOGS ---
+console.log("--- Environment Variables for Sequelize ---");
+console.log("DB_NAME:", process.env.DB_NAME);
+console.log("DB_USER:", process.env.DB_USER);
+console.log("DB_PASSWORD:", process.env.DB_PASSWORD ? "********" : undefined); // Don't log actual password
+console.log("DB_SERVER:", process.env.DB_SERVER);
+console.log("DB_PORT (raw):", process.env.DB_PORT);
+const portToUse = parseInt(process.env.DB_PORT) || 1433;
+console.log("DB_PORT (parsed to use):", portToUse);
+console.log("-----------------------------------------");
+// --- END DEBUG LOGS ---
 
 const sequelize = new Sequelize(
-  process.env.WilloV2,          // Database name from .env (WilloV2)
-  process.env.sa,          // Database username from .env (sa)
-  process.env.sipamara,      // Database password from .env (sipamara)
+  process.env.DB_NAME,
+  process.env.DB_USER,
+  process.env.DB_PASSWORD,
   {
-    host: process.env.localhost,  // Database server from .env (localhost)
-    port: 1434,      // Database port from .env (1434)
-    dialect: 'mssql',             // Using Microsoft SQL Server
+    host: process.env.DB_SERVER,
+    port: portToUse, // Use the debugged portToUse variable
+    dialect: 'mssql',
     dialectOptions: {
       options: {
-        encrypt: true,             // Use encryption if required by your server
-        trustServerCertificate: true // Change to false for production environments
+        encrypt: true,             // Use encryption if required by your server (common for Azure SQL)
+        trustServerCertificate: true // For local dev; set to false for production with a valid cert
       }
     },
     pool: {
@@ -24,7 +43,7 @@ const sequelize = new Sequelize(
       acquire: 30000,   // Maximum time (ms) to try getting a connection before throwing an error
       idle: 10000       // Maximum time (ms) that a connection can be idle before being released
     },
-    logging: false      // Disable SQL query logging (set to console.log to enable)
+    logging: console.log // Enable logging to see SQL queries (or set to false to disable)
   }
 );
 

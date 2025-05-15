@@ -1,7 +1,8 @@
 .auth-sidebar {
   width: 280px;
   height: 100vh;
-  background: linear-gradient(145deg, #000000 0%, #1a1a1a 100%);
+  // background: linear-gradient(145deg, #000000 0%, #1a1a1a 100%); // Old background
+  background: linear-gradient(to bottom, #872341, #6a1c36); // New theme gradient
   position: fixed;
   left: 0;
   top: 0;
@@ -19,16 +20,10 @@
 }
 
 .company-logo {
-  width: 100%;
-  height: auto;
-  max-width: 200px;
-  filter: brightness(1.1);
-  transition: transform 0.3s ease, filter 0.3s ease;
-
-  &:hover {
-    transform: scale(1.05);
-    filter: brightness(1.2);
-  }
+  width: 100px; // Adjust width as needed
+  height: auto; // Maintain aspect ratio
+  display: block;
+  margin: 0 auto; // Center the logo
 }
 
 @keyframes fadeIn {

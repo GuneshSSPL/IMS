@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core'; // Import OnInit here
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -26,13 +26,18 @@ import { AuthSidebarComponent } from '../auth-sidebar/auth-sidebar.component';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   credentials = {
     email: '',
     password: ''
   };
 
   constructor(private authService: AuthService, private router: Router) {}
+
+  ngOnInit(): void {
+    // Initialization logic can go here if needed in the future.
+    // For now, it can be empty to satisfy the OnInit interface.
+  }
 
   login() {
     if (!this.credentials.email || !this.credentials.password) {
@@ -68,6 +73,7 @@ export class LoginComponent {
   }
 
   loginWithLinkedIn() {
-    window.location.href = `${environment.apiUrl}/auth/linkedin`;
+    // Redirect to your backend LinkedIn login route
+    window.location.href = 'http://localhost:5000/auth/linkedin';
   }
 }

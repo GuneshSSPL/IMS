@@ -42,6 +42,12 @@ body {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+.button-container {
+  display: flex; /* Arranges buttons in a row */
+  gap: 10px; /* Adds space between the buttons */
+  justify-content: flex-start; /* Aligns buttons to the start, or use 'center' etc. */
+}
+
 /* Remove or comment out the old .form-container style if it's no longer used
    or if .login-form-card replaces its specific role.
    The old .form-container had:
@@ -103,6 +109,41 @@ mat-form-field {
 .oauth-container {
   margin-top: 24px;
   text-align: center;
+}
+
+.oauth-container p {
+  margin-bottom: 10px;
+  color: #555;
+}
+
+.auth0-button, .linkedin-button {
+  width: 100%;
+  max-width: 300px; /* Or adjust as needed */
+  margin: 5px auto; /* Centering and spacing */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 15px;
+  border-radius: 4px;
+  font-size: 15px;
+  /* Add specific styles for LinkedIn button if desired */
+}
+
+.linkedin-button {
+  /* Example: background-color: #0077B5; */
+  /* color: white; */
+  /* border-color: #0077B5; */
+}
+
+.linkedin-button:hover {
+  /* Example: background-color: #005582; */
+}
+
+
+.oauth-logo {
+  width: 20px; /* Adjust size as needed */
+  height: 20px; /* Adjust size as needed */
+  margin-right: 10px;
 }
 
 @media (max-width: 768px) {
